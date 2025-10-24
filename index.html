@@ -1,1837 +1,1032 @@
 <!DOCTYPE html>
-
 <html lang="tr">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>World Agagsia - İş Takibi</title>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
-
         :root {
-
             --sidebar-bg: #0747a6;
-
             --board-bg: #0079BF;
-
             --list-bg: #EBECF0;
-
             --card-bg: #FFFFFF;
-
             --text-dark: #172b4d;
-
             --text-light: #5e6c84;
-
             --text-sidebar: #DEEBFF;
-
             --hover-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
-
             --base-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-
             
-
             --note-color-1: #fff475;
-
             --note-color-2: #fbbc04;
-
             --note-color-3: #a7ffeb;
-
             --note-color-4: #cbf0f8;
-
             --note-color-5: #aecbfa;
-
             --note-color-6: #fdcfe8;
-
         }
-
-
 
         body {
-
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-
             margin: 0;
-
             color: var(--text-dark);
-
             height: 100vh;
-
             overflow: hidden;
-
         }
-
         
-
         /* --- GİRİŞ SAYFASI --- */
-
         #login-screen {
-
             position: fixed;
-
             top: 0;
-
             left: 0;
-
             width: 100%;
-
             height: 100%;
-
             background-color: var(--board-bg);
-
             display: flex;
-
             justify-content: center;
-
             align-items: center;
-
             z-index: 200;
-
         }
-
         
-
         .login-box { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); width: 350px; text-align: center; }
-
         .login-logo { width: 200px; margin-bottom: 20px; }
-
         .login-box h2 { margin-top: 0; color: var(--text-dark); }
-
         .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #DFE1E6; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
-
         .login-box button { width: 100%; padding: 12px; background-color: var(--sidebar-bg); color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-
         .login-box button:hover { background-color: #0052cc; }
-
         #login-error { color: #DE350B; font-size: 14px; margin-top: 15px; display: none; }
-
         
-
         #main-app { display: none; }
-
         .app-container { display: flex; height: 100vh; }
 
-
-
         /* --- YANDAN MENÜ (SIDEBAR) --- */
-
         .sidebar {
-
             width: 240px;
-
             background-color: var(--sidebar-bg);
-
             color: var(--text-sidebar);
-
             padding: 20px;
-
             flex-shrink: 0;
-
             display: flex;
-
             flex-direction: column;
-
             transition: left 0.3s ease;
-
             z-index: 1001;
-
         }
-
         
-
         #close-menu-btn { display: none; position: absolute; top: 10px; right: 15px; font-size: 24px; background: none; border: none; color: white; cursor: pointer; }
-
         .sidebar-logo { width: 100%; max-width: 180px; margin: 0 auto 15px auto; display: block; border-radius: 8px; }
-
         .sidebar h1 { font-size: 18px; margin: 0 0 20px 0; color: white; text-align: center; line-height: 1.3; }
-
         .nav-links { display: flex; flex-direction: column; gap: 5px; }
-
         .nav-link { display: block; padding: 12px 15px; border: none; background: none; color: var(--text-sidebar); font-size: 16px; font-weight: 600; border-radius: 5px; cursor: pointer; text-align: left; transition: background 0.2s; }
-
         .nav-link:hover { background-color: rgba(255, 255, 255, 0.2); }
-
         .nav-link.active { background-color: rgba(255, 255, 255, 0.3); color: white; }
-
         #logout-btn { margin-top: auto; background-color: rgba(255, 86, 48, 0.2); }
-
         #logout-btn:hover { background-color: rgba(255, 86, 48, 0.4); }
-
-
 
         #menu-toggle-btn { display: none; position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.3); color: white; border: none; font-size: 24px; padding: 5px 10px; border-radius: 5px; z-index: 1000; cursor: pointer; }
 
-
-
         /* --- Ana İçerik Alanı --- */
-
         .main-content-wrapper { flex-grow: 1; overflow: hidden; background-color: var(--board-bg); }
-
         .page-content { display: none; height: 100%; overflow-y: auto; }
-
         .page-content.active { display: block; }
-
         
-
         /* --- Pano Sayfaları (Genel Başlık) --- */
-
         .board-page-header { padding: 20px 20px 0 20px; display: flex; align-items: center; gap: 15px; }
-
         .board-page-header label { font-size: 16px; font-weight: 600; color: white; }
-
         .board-page-header input { padding: 8px 12px; font-size: 16px; border: 2px solid var(--sidebar-bg); border-radius: 5px; }
-
         .add-item-btn-header { padding: 8px 12px; font-size: 16px; border: none; border-radius: 5px; background-color: var(--sidebar-bg); color: white; cursor: pointer; font-weight: 600; margin-left: auto; }
-
         .board-container { display: flex; gap: 15px; align-items: flex-start; padding: 20px; height: calc(100vh - 100px); overflow-x: auto; }
 
-
-
         /* --- Liste ve Kart Stilleri --- */
-
         .list { background-color: var(--list-bg); border-radius: 8px; width: 300px; flex-shrink: 0; padding: 10px; box-shadow: var(--base-shadow); display: flex; flex-direction: column; max-height: 100%; }
-
         .list-title { font-size: 16px; font-weight: 600; padding: 5px 10px; margin: 0 0 10px 0; }
-
         .cards-container { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; min-height: 50px; padding: 5px; flex-grow: 1; }
-
         .card { background-color: var(--card-bg); border-radius: 5px; padding: 12px; box-shadow: var(--base-shadow); cursor: grab; transition: all 0.2s ease; }
-
         .card:hover { box-shadow: var(--hover-shadow); }
-
         .card.dragging { opacity: 0.5; transform: rotate(3deg); }
-
         .card-title { font-size: 15px; font-weight: 500; margin: 0 0 8px 0; }
-
         .labels { display: flex; gap: 5px; margin-bottom: 8px; }
-
         .label { padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; color: white; }
-
         .label-instagram { background-color: #E1306C; } .label-tiktok { background-color: #000000; } .label-linkedin { background-color: #0A66C2; } .label-youtube { background-color: #FF0000; } .label-diger { background-color: #777; }
-
         .card-footer { display: flex; justify-content: space-between; align-items: center; }
-
         .card-date-display { font-size: 13px; color: var(--text-light); }
-
         .delete-card { font-size: 14px; color: var(--text-light); cursor: pointer; padding: 2px; }
-
         .delete-card:hover { color: #f00; }
-
         .add-card-btn { background-color: rgba(0,0,0,0.1); color: var(--text-light); border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: 600; transition: background 0.2s; margin-top: 10px; }
-
         .add-card-btn:hover { background-color: rgba(0,0,0,0.2); color: var(--text-dark); }
 
-
-
         /* --- Modal Stilleri --- */
-
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-
         .modal.show { display: flex; }
-
         .modal-content { background-color: #F4F5F7; padding: 25px; border-radius: 8px; width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-
         .modal-content h2 { margin-top: 0; }
-
         .form-group { margin-bottom: 15px; }
-
         .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
-
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 2px solid #DFE1E6; border-radius: 3px; box-sizing: border-box; }
-
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--board-bg); outline: none; }
-
         .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; }
-
         .modal-buttons button { padding: 10px 15px; border: none; border-radius: 5px; font-weight: 600; cursor: pointer; }
-
         #save-task-btn, #save-patient-btn, #save-note-btn { background-color: #0079BF; color: white; }
-
         #cancel-task-btn, #cancel-patient-btn, #cancel-note-btn { background-color: #DFE1E6; color: var(--text-dark); }
-
         
-
-        /* --- GÜNCELLENDİ: YAPISKAN NOTLAR SAYFASI --- */
-
+        /* --- YAPISKAN NOTLAR SAYFASI --- */
         .notes-page-container {
-
             padding: 20px;
-
             background-color: var(--list-bg);
-
             height: 100%;
-
             box-sizing: border-box;
-
         }
-
         .notes-header {
-
             display: flex;
-
             justify-content: space-between;
-
             align-items: center;
-
             margin-bottom: 20px;
-
         }
-
         .notes-header h2 { margin: 0; color: var(--text-dark); }
-
         #add-note-btn { padding: 10px 15px; border: none; border-radius: 5px; font-weight: 600; cursor: pointer; background-color: #0079BF; color: white; }
-
         
-
         #notes-board {
-
-            display: grid; /* Otomatik sıralama için grid kullan */
-
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Ekrana sığdığı kadar yan yana koy */
-
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
             gap: 20px;
-
             align-content: flex-start;
-
         }
-
         
-
         .sticky-note {
-
-            /* GÜNCELLENDİ: Sürükleme ve pozisyonla ilgili her şey kaldırıldı */
-
-            width: auto; /* Grid'e uyum sağla */
-
-            height: 250px; /* Sabit yükseklik */
-
+            width: auto; 
+            height: 250px; 
             padding: 15px;
-
             background-color: var(--note-color-1);
-
             border-radius: 5px;
-
             box-shadow: var(--base-shadow);
-
             display: flex;
-
             flex-direction: column;
-
             box-sizing: border-box;
-
-            /* cursor: move; KALDIRILDI */
-
-            /* position: absolute; KALDIRILDI */
-
-            /* left/top KALDIRILDI */
-
         }
-
         
-
         /* Rastgele renkler için sınıflar */
-
         .sticky-note[data-color="1"] { background-color: var(--note-color-1); }
-
         .sticky-note[data-color="2"] { background-color: var(--note-color-2); }
-
         .sticky-note[data-color="3"] { background-color: var(--note-color-3); }
-
         .sticky-note[data-color="4"] { background-color: var(--note-color-4); }
-
         .sticky-note[data-color="5"] { background-color: var(--note-color-5); }
-
         .sticky-note[data-color="6"] { background-color: var(--note-color-6); }
-
         
-
         .note-header {
-
             display: flex;
-
             justify-content: space-between;
-
             align-items: center;
-
             border-bottom: 1px solid rgba(0,0,0,0.1);
-
             padding-bottom: 5px;
-
             margin-bottom: 10px;
-
         }
-
         
-
         .note-title { font-size: 16px; font-weight: 700; }
-
         .delete-note { font-size: 16px; color: var(--text-light); cursor: pointer; }
-
         
-
         .note-content {
-
             font-size: 14px;
-
             flex-grow: 1;
-
             overflow-y: auto;
-
             white-space: pre-wrap;
-
             word-wrap: break-word;
-
         }
-
-
-
 
 
         /* --- Rapor Sayfası --- */
-
         .report-page-container { padding: 20px; background-color: var(--list-bg); height: 100%; box-sizing: border-box; }
-
         .report-filters { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; background-color: var(--card-bg); padding: 15px; border-radius: 8px; }
-
         .report-filters label { font-weight: 600; }
-
         .report-filters input[type="date"] { padding: 8px; border: 2px solid #DFE1E6; border-radius: 5px; }
-
         #generate-report-btn { padding: 10px 15px; border: none; border-radius: 5px; font-weight: 600; cursor: pointer; background-color: #0079BF; color: white; }
-
         .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
-
         .chart-wrapper { background-color: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: var(--base-shadow); }
-
         .chart-wrapper h2 { margin-top: 0; text-align: center; }
 
-
-
         
-
         /* --- MOBİL UYUMLULUK --- */
-
         @media (max-width: 768px) {
-
             .sidebar { position: fixed; left: -260px; height: 100%; box-shadow: 0 0 20px rgba(0,0,0,0.3); }
-
             .sidebar.open { left: 0; }
-
             #close-menu-btn { display: block; }
-
             #menu-toggle-btn { display: block; }
-
             .main-content-wrapper { width: 100%; }
-
             
-
             .board-page-header { flex-direction: column; align-items: flex-start; padding-top: 60px; }
-
             .board-page-header label { margin: 0; }
-
             .board-page-header input { width: 100%; box-sizing: border-box; }
-
             .add-item-btn-header { width: 100%; margin-left: 0; }
 
-
-
             .login-box { width: 90%; padding: 30px; }
-
             
-
             .report-filters { flex-direction: column; align-items: stretch; }
-
             .report-filters input, .report-filters button { width: 100%; box-sizing: border-box; }
-
             
-
             .report-grid { grid-template-columns: 1fr; }
-
             .modal-content { width: 90%; padding: 20px; }
-
             
-
             .page-content { padding-top: 50px; }
-
             #board-page, #patient-page { padding-top: 0; }
 
-
-
-            /* GÜNCELLENDİ: Yapışkan Notlar Mobil */
-
             #notes-board {
-
-                display: flex; /* Mobilde alt alta sırala */
-
+                display: flex; 
                 flex-direction: column;
-
                 gap: 15px;
-
-                grid-template-columns: 1fr; /* Grid'i sıfırla */
-
+                grid-template-columns: 1fr; 
             }
-
             .sticky-note {
-
-                width: auto; /* Tam genişlik */
-
-                height: auto; /* İçeriğe göre yükseklik */
-
+                width: auto; 
+                height: auto; 
                 min-height: 150px;
-
             }
-
             .notes-header h2 { font-size: 20px; }
-
             #add-note-btn { width: 100%; margin-top: 10px; }
-
             .notes-header { flex-wrap: wrap; }
-
         }
-
         
-
     </style>
-
 </head>
-
 <body>
-
-
 
     <button id="menu-toggle-btn">☰</button>
 
-
-
     <div id="login-screen">
-
         <div class="login-box">
-
             <img src="https://i.hizliresim.com/ohlxidw.png" alt="World Agagsia Logo" class="login-logo">
-
             <h2>İş Takibi Giriş</h2>
-
             <form id="login-form">
-
                 <input type="text" id="login-username" placeholder="Kullanıcı Adı" required>
-
                 <input type="password" id="login-password" placeholder="Şifre" required>
-
                 <button type="submit">Giriş Yap</button>
-
                 <p id="login-error"></p>
-
             </form>
-
         </div>
-
     </div>
-
-
 
     <main id="main-app">
-
         <div class="app-container">
-
         
-
             <nav class="sidebar" id="sidebar">
-
                 <button id="close-menu-btn">✖</button>
-
                 <img src="https://i.hizliresim.com/ohlxidw.png" alt="World Agagsia Logo" class="sidebar-logo">
-
                 <h1>World Agagsia Health Tourism İş Takibi</h1>
-
                 <div class="nav-links">
-
                     <button class="nav-link active" data-page="board-page">Pano (Görevler)</button>
-
                     <button class="nav-link" data-page="patient-page">Hasta Listesi</button>
-
                     <button class="nav-link" data-page="notes-page">Toplantı Notları</button>
-
                     <button class="nav-link" data-page="reports-page">Raporlar</button>
-
                 </div>
-
                 <button id="logout-btn" class="nav-link">Çıkış Yap</button>
-
             </nav>
-
             
-
             <main class="main-content-wrapper">
 
-
-
                 <div id="board-page" class="page-content active">
-
                     <div class="board-page-header">
-
                         <label for="board-date-picker">Görev Tarihi Seçin:</label>
-
                         <input type="date" id="board-date-picker">
-
                     </div>
-
                     <div class="board-container" id="board-container">
-
                         <div class="list">
-
                             <h2 class="list-title">Beklemede</h2>
-
                             <div class="cards-container" data-list-id="beklemede"></div>
-
                             <button class="add-card-btn" data-list="beklemede">Görev Ekle +</button>
-
                         </div>
-
                         <div class="list">
-
                             <h2 class="list-title">Yapılıyor</h2>
-
                             <div class="cards-container" data-list-id="yapiliyor"></div>
-
                             <button class="add-card-btn" data-list="yapiliyor">Görev Ekle +</button>
-
                         </div>
-
                         <div class="list">
-
                             <h2 class="list-title">Tamamlandı</h2>
-
                             <div class="cards-container" data-list-id="tamamlandi"></div>
-
                             <button class="add-card-btn" data-list="tamamlandi">Görev Ekle +</button>
-
                         </div>
-
                     </div>
-
                 </div>
-
                 
-
                 <div id="patient-page" class="page-content">
-
                     <div class="board-page-header">
-
                         <label for="patient-week-picker">Hafta Seçin:</label>
-
                         <input type="week" id="patient-week-picker">
-
                         <button id="add-patient-btn" class="add-item-btn-header">Yeni Hasta Ekle +</button>
-
                     </div>
-
                     <div class="board-container" id="patient-board-container">
-
                         <div class="list">
-
                             <h2 class="list-title">Fotoğraf Bekleniyor</h2>
-
                             <div class="cards-container" data-list-id="bekleniyor"></div>
-
                         </div>
-
                         <div class="list">
-
                             <h2 class="list-title">Fotoğraf Geldi</h2>
-
                             <div class="cards-container" data-list-id="geldi"></div>
-
                         </div>
-
                     </div>
-
                 </div>
-
-
 
                 <div id="notes-page" class="page-content">
-
                     <div class="notes-page-container">
-
                         <div class="notes-header">
-
                             <h2>Toplantı Notları</h2>
-
                             <button id="add-note-btn">Yeni Not Ekle +</button>
-
                         </div>
-
                         <div id="notes-board">
-
                             </div>
-
                     </div>
-
                 </div>
-
                 
-
                 <div id="reports-page" class="page-content">
-
                     <div class="report-page-container">
-
                         <div class="report-filters">
-
                             <label for="report-start-date">Başlangıç Tarihi:</label>
-
                             <input type="date" id="report-start-date">
-
                             <label for="report-end-date">Bitiş Tarihi:</label>
-
                             <input type="date" id="report-end-date">
-
                             <button id="generate-report-btn">Raporu Oluştur</button>
-
                         </div>
-
                         <div class="report-grid">
-
                             <div class="chart-wrapper">
-
                                 <h2>Görev Durumu</h2>
-
                                 <canvas id="statusChart"></canvas>
-
                             </div>
-
                             <div class="chart-wrapper">
-
                                 <h2>Platform Dağılımı</h2>
-
                                 <canvas id="platformChart"></canvas>
-
                             </div>
-
                         </div>
-
                     </div>
-
                 </div>
-
             </main>
-
         </div>
-
     </main>
 
-
-
     <div id="task-modal" class="modal">
-
         <div class="modal-content">
-
             <h2>Yeni Görev Ekle</h2>
-
             <form id="task-form">
-
                 <input type="hidden" id="task-list-id">
-
                 <div class="form-group"> <label for="task-title">Görev Başlığı</label> <input type="text" id="task-title" required> </div>
-
                 <div class="form-group"> <label for="task-platform">Platform</label> <select id="task-platform"> <option value="instagram">Instagram</option> <option value="tiktok">TikTok</option> <option value="linkedin">LinkedIn</option> <option value="youtube">YouTube</option> <option value="diger">Diğer</option> </select> </div>
-
                 <div class="form-group"> <label for="task-date">Tarih</label> <input type="date" id="task-date" required> </div>
-
                 <div class="modal-buttons"> <button type="button" id="cancel-task-btn">İptal</button> <button type="submit" id="save-task-btn">Kaydet</button> </div>
-
             </form>
-
         </div>
-
     </div>
-
     
-
     <div id="patient-modal" class="modal">
-
         <div class="modal-content">
-
             <h2>Yeni Hasta Ekle</h2>
-
             <form id="patient-form">
-
                 <div class="form-group"> <label for="patient-name">Hasta İsmi</label> <input type="text" id="patient-name" required> </div>
-
                 <div class="form-group"> <label for="patient-date">Geldiği Tarih</label> <input type="date" id="patient-date" required> </div>
-
                 <div class="modal-buttons"> <button type="button" id="cancel-patient-btn">İptal</button> <button type="submit" id="save-patient-btn">Kaydet</button> </div>
-
             </form>
-
         </div>
-
     </div>
-
     
-
     <div id="note-modal" class="modal">
-
         <div class="modal-content">
-
             <h2>Yeni Not Ekle</h2>
-
             <form id="note-form">
-
                 <div class="form-group"> <label for="note-title-input">Başlık</label> <input type="text" id="note-title-input" required> </div>
-
                 <div class="form-group"> <label for="note-content-input">İçerik</label> <textarea id="note-content-input" rows="5"></textarea> </div>
-
                 <div class="modal-buttons"> <button type="button" id="cancel-note-btn">İptal</button> <button type="submit" id="save-note-btn">Kaydet</button> </div>
-
             </form>
-
         </div>
-
     </div>
 
 
-
-
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 
     <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyChVBW7363FhKzlfBNu95ckV90pjDIkjHM",
+            authDomain: "agagsiaistakibi.firebaseapp.com",
+            projectId: "agagsiaistakibi",
+            storageBucket: "agagsiaistakibi.firebasestorage.app",
+            messagingSenderId: "407495273167",
+            appId: "1:407495273167:web:8484fc80194a5187b3a5ba",
+            measurementId: "G-HBP5RSL4LS"
+        };
 
+        // Firebase'i başlat
+        firebase.initializeApp(firebaseConfig);
+        
+        // Firestore veritabanına bağlan (Tüm kodumuz bu 'db' değişkenini kullanacak)
+        const db = firebase.firestore();
+    </script>
+
+    <script>
         document.addEventListener('DOMContentLoaded', () => {
-
             
-
             // --- DEĞİŞKENLER (Giriş) ---
-
             const loginScreen = document.getElementById('login-screen');
-
             const mainApp = document.getElementById('main-app');
-
             const loginForm = document.getElementById('login-form');
-
             const loginError = document.getElementById('login-error');
-
             const logoutBtn = document.getElementById('logout-btn');
 
-
-
             // --- DEĞİŞKENLER (Mobil Menü) ---
-
             const menuToggleBtn = document.getElementById('menu-toggle-btn');
-
             const closeMenuBtn = document.getElementById('close-menu-btn');
-
             const sidebar = document.getElementById('sidebar');
 
-
-
             // --- DEĞİŞKENLER (Görev Panosu) ---
-
             const navLinks = document.querySelectorAll('.nav-link');
-
             const pages = document.querySelectorAll('.page-content');
-
             const taskModal = document.getElementById('task-modal');
-
             const cancelTaskBtn = document.getElementById('cancel-task-btn');
-
             const taskForm = document.getElementById('task-form');
-
             const listIdInput = document.getElementById('task-list-id');
-
             const boardDatePicker = document.getElementById('board-date-picker');
-
             
-
             // --- DEĞİŞKENLER (Hasta Panosu) ---
-
             const patientModal = document.getElementById('patient-modal');
-
             const addPatientBtn = document.getElementById('add-patient-btn');
-
             const cancelPatientBtn = document.getElementById('cancel-patient-btn');
-
             const patientForm = document.getElementById('patient-form');
-
             const patientWeekPicker = document.getElementById('patient-week-picker');
 
-
-
             // --- DEĞİŞKENLER (Not Panosu) ---
-
             const noteModal = document.getElementById('note-modal');
-
             const addNoteBtn = document.getElementById('add-note-btn');
-
             const cancelNoteBtn = document.getElementById('cancel-note-btn');
-
             const noteForm = document.getElementById('note-form');
-
             const notesBoard = document.getElementById('notes-board');
 
-
-
             // --- DEĞİŞKENLER (Raporlar) ---
-
             const reportStartDateInput = document.getElementById('report-start-date');
-
             const reportEndDateInput = document.getElementById('report-end-date');
-
             const generateReportBtn = document.getElementById('generate-report-btn');
 
-
-
             // --- Global Değişkenler ---
-
             let currentActivePage = 'board-page';
-
             let draggedCard = null; // Görev veya Hasta kartı için
-
-            /* GÜNCELLENDİ: Sürükleme kaldırıldı */
-
-            // let draggedNote = null; 
-
             let myStatusChartInstance = null;
-
             let myPlatformChartInstance = null;
-
-
-
-            const STORAGE_KEY = 'sosyalMedyaKanbanData_v2'; 
-
-
+            
+            // GÜNCELLENDİ: appData global olarak tanımlandı, initializeApp içinde doldurulacak
+            let appData; 
+            
+            // GÜNCELLENDİ: const STORAGE_KEY ... SİLİNDİ
 
             
-
             // --- 1. GİRİŞ SİSTEMİ MANTIĞI ---
-
+            // (Bu bölümde değişiklik yok, sessionStorage kullanıyor)
             if (sessionStorage.getItem('loggedIn') === 'true') {
-
                 loginScreen.style.display = 'none';
-
                 mainApp.style.display = 'block';
-
             } else {
-
                 loginScreen.style.display = 'flex';
-
                 mainApp.style.display = 'none';
-
             }
-
             loginForm.addEventListener('submit', (e) => {
-
                 e.preventDefault();
-
                 const username = document.getElementById('login-username').value;
-
                 const password = document.getElementById('login-password').value;
-
                 if (username === 'admin' && password === 'admin1234') {
-
                     sessionStorage.setItem('loggedIn', 'true');
-
                     loginScreen.style.display = 'none';
-
                     mainApp.style.display = 'block';
-
+                    initializeApp(); // GÜNCELLENDİ: Giriş yapınca uygulamayı ve veritabanını başlat
                 } else {
-
                     loginError.textContent = 'Kullanıcı adı veya şifre hatalı!';
-
                     loginError.style.display = 'block';
-
                 }
-
             });
-
             logoutBtn.addEventListener('click', () => {
-
                 sessionStorage.removeItem('loggedIn');
-
                 location.reload();
-
             });
-
-
 
             // --- 2. MOBİL MENÜ MANTIĞI ---
-
             menuToggleBtn.addEventListener('click', () => sidebar.classList.add('open'));
-
             closeMenuBtn.addEventListener('click', () => sidebar.classList.remove('open'));
 
 
-
-
-
             // --- 3. TARİH YARDIMCI FONKSİYONLARI ---
-
+            // (Değişiklik yok)
             function getTodayISO() {
-
                 const today = new Date();
-
                 today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
-
                 return today.toISOString().split('T')[0];
-
             }
-
             function getOneMonthAgoISO() {
-
                 const today = new Date();
-
                 today.setMonth(today.getMonth() - 1);
-
                 today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
-
                 return today.toISOString().split('T')[0];
-
             }
-
             function getWeekString(date) {
-
                 const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-
                 d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-
                 const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-
                 const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
-
                 return d.getUTCFullYear() + '-W' + String(weekNo).padStart(2, '0');
-
             }
-
             function getWeekRange(weekString) {
-
                 const [year, weekNum] = weekString.split('-W').map(Number);
-
                 const d = new Date(Date.UTC(year, 0, 1 + (weekNum - 1) * 7));
-
                 const day = d.getUTCDay() || 7;
-
                 d.setUTCDate(d.getUTCDate() + 1 - day);
-
                 const startDate = d.toISOString().split('T')[0];
-
                 d.setUTCDate(d.getUTCDate() + 6);
-
                 const endDate = d.toISOString().split('T')[0];
-
                 return { startDate, endDate };
-
             }
 
-
-
-            // --- 4. VERİ YÖNETİMİ ---
-
+            // --- 4. VERİ YÖNETİMİ (GÜNCELLENDİ) ---
+            
             const getInitialData = () => ({ 
-
                 tasks: [], 
-
                 patients: [], 
-
-                notes: [] // Notlar dizi
-
+                notes: []
             });
 
-
-
-            function loadData() {
-
-                const oldDataKey = 'sosyalMedyaKanbanData';
-
-                const oldData = localStorage.getItem(oldDataKey);
-
-                
-
-                if (oldData) {
-
-                    console.log("Eski veri bulundu, yeni formata taşınıyor...");
-
-                    const parsedOldData = JSON.parse(oldData);
-
-                    let migratedData = getInitialData();
-
-                    
-
-                    // GÜNCELLENDİ: Eski notları taşı (tek bir not olarak)
-
-                    if(parsedOldData.notes && typeof parsedOldData.notes === 'string') {
-
-                        migratedData.notes.push({
-
-                            id: 'note-' + Date.now(),
-
-                            title: 'Eski Notlar',
-
-                            content: parsedOldData.notes,
-
-                            color: 1
-
-                            // x, y kaldırıldı
-
-                        });
-
-                    }
-
-
-
-                    const dateMap = { 'Pazartesi': '2025-10-20', 'Salı': '2025-10-21', 'Çarşamba': '2025-10-22', 'Perşembe': '2025-10-23', 'Cuma': '2025-10-24', 'Cumartesi': '2025-10-25', 'Pazar': '2025-10-26' };
-
-                    const weekKeys = ['week1', 'week2', 'week3'];
-
-                    weekKeys.forEach(weekKey => {
-
-                        if (parsedOldData[weekKey]) {
-
-                            Object.keys(parsedOldData[weekKey]).forEach(statusKey => {
-
-                                parsedOldData[weekKey][statusKey].forEach(task => {
-
-                                    let taskDate = getTodayISO();
-
-                                    if(weekKey === 'week1' && task.day && dateMap[task.day]) { taskDate = dateMap[task.day]; }
-
-                                    migratedData.tasks.push({ id: task.id, title: task.title, platform: task.platform, date: taskDate, status: statusKey });
-
-                                });
-
-                            });
-
-                        }
-
+            // GÜNCELLENDİ: loadData, Firebase'den asenkron veri çekecek
+            async function loadDataFromFirebase() {
+                let data = getInitialData();
+                try {
+                    // 1. Görevleri çek
+                    const tasksSnapshot = await db.collection('tasks').get();
+                    tasksSnapshot.forEach(doc => {
+                        data.tasks.push({ id: doc.id, ...doc.data() });
                     });
 
-                    saveData(migratedData);
+                    // 2. Hastaları çek
+                    const patientsSnapshot = await db.collection('patients').get();
+                    patientsSnapshot.forEach(doc => {
+                        data.patients.push({ id: doc.id, ...doc.data() });
+                    });
 
-                    localStorage.removeItem(oldDataKey);
-
-                    return migratedData;
-
-                } else {
-
-                    const data = localStorage.getItem(STORAGE_KEY);
-
-                    let appData = data ? JSON.parse(data) : getInitialData();
-
-                    if (!appData.patients) appData.patients = [];
-
-                    if (!appData.notes || !Array.isArray(appData.notes)) appData.notes = [];
-
-                    return appData;
-
+                    // 3. Notları çek
+                    const notesSnapshot = await db.collection('notes').get();
+                    notesSnapshot.forEach(doc => {
+                        data.notes.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    console.log("Veriler Firebase'den başarıyla yüklendi.");
+                } catch (error) {
+                    console.error("Veri yüklenirken hata oluştu: ", error);
+                    alert("Veritabanı yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.");
                 }
-
+                return data;
             }
 
-            
-
-            function saveData(data) {
-
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-
-            }
-
-
-
-            let appData = loadData();
-
+            // GÜNCELLENDİ: function loadData() SİLİNDİ
+            // GÜNCELLENDİ: function saveData(data) SİLİNDİ
+            // GÜNCELLENDİ: let appData = loadData(); SİLİNDİ (initializeApp içine taşındı)
 
 
             // --- 5. GÖREV PANOSU MANTIĞI ---
-
+            
             function renderTaskBoard(date) {
-
                 document.querySelectorAll('#board-container .cards-container').forEach(c => c.innerHTML = '');
-
+                // appData'nın yüklendiğinden emin ol
+                if (!appData || !appData.tasks) return; 
                 const tasksForDate = appData.tasks.filter(task => task.date === date);
-
                 tasksForDate.forEach(task => {
-
                     const card = createTaskCardElement(task);
-
                     const container = document.querySelector(`#board-container .cards-container[data-list-id="${task.status}"]`);
-
                     if (container) container.appendChild(card);
-
                 });
-
             }
-
+            
             function createTaskCardElement(task) {
-
                 const card = document.createElement('div');
-
                 card.className = 'card';
-
                 card.draggable = true;
-
                 card.dataset.taskId = task.id;
-
                 const platformClass = `label-${task.platform.toLowerCase() || 'diger'}`;
-
                 card.innerHTML = `
-
                     <div class="labels"><span class="label ${platformClass}">${task.platform}</span></div>
-
                     <p class="card-title">${task.title}</p>
-
                     <div class="card-footer">
-
                         <span></span> <span class="delete-card" title="Görevi Sil">✖</span>
-
                     </div>
-
                 `;
-
                 card.addEventListener('dragstart', () => { draggedCard = card; setTimeout(() => card.classList.add('dragging'), 0); });
-
                 card.addEventListener('dragend', () => {
-
                     card.classList.remove('dragging');
-
                     if (!draggedCard || !draggedCard.dataset.taskId) return;
-
                     const taskId = draggedCard.dataset.taskId;
-
                     const newContainer = draggedCard.closest('.cards-container');
-
                     if(newContainer) { updateTaskStatus(taskId, newContainer.dataset.listId); }
-
                     draggedCard = null;
-
                 });
-
                 card.querySelector('.delete-card').addEventListener('click', () => {
-
                     if(confirm("Bu GÖREVİ silmek istediğinizden emin misiniz?")) {
-
-                        deleteTask(task.id); card.remove(); saveData(appData); updateReportPageIfActive();
-
+                        deleteTask(task.id); 
+                        card.remove(); 
+                        // GÜNCELLENDİ: saveData(appData); SİLİNDİ
+                        updateReportPageIfActive();
                     }
-
                 });
-
                 return card;
-
             }
-
+            
             function updateTaskStatus(taskId, newStatus) {
-
                 const task = appData.tasks.find(t => t.id === taskId);
-
-                if (task) { task.status = newStatus; saveData(appData); updateReportPageIfActive(); }
-
+                if (task) { 
+                    task.status = newStatus; // Lokal veriyi güncelle
+                    
+                    // GÜNCELLENDİ: Firebase'i güncelle
+                    db.collection('tasks').doc(taskId).update({ status: newStatus })
+                        .catch(error => console.error("Görev güncellenirken hata: ", error));
+                    
+                    updateReportPageIfActive(); 
+                }
             }
-
-            function deleteTask(taskId) { appData.tasks = appData.tasks.filter(task => task.id !== taskId); }
-
-
+            
+            function deleteTask(taskId) { 
+                appData.tasks = appData.tasks.filter(task => task.id !== taskId); // Lokal veriyi sil
+                
+                // GÜNCELLENDİ: Firebase'den sil
+                db.collection('tasks').doc(taskId).delete()
+                    .catch(error => console.error("Görev silinirken hata: ", error));
+            }
 
             // --- 6. HASTA PANOSU MANTIĞI ---
-
+            
             function renderPatientBoard(weekString) {
-
                 if (!weekString) return;
-
+                // appData'nın yüklendiğinden emin ol
+                if (!appData || !appData.patients) return; 
                 const { startDate, endDate } = getWeekRange(weekString);
-
                 document.querySelectorAll('#patient-board-container .cards-container').forEach(c => c.innerHTML = '');
-
                 const patientsForWeek = appData.patients.filter(p => p.date >= startDate && p.date <= endDate);
-
                 patientsForWeek.forEach(patient => {
-
                     const card = createPatientCardElement(patient);
-
                     const container = document.querySelector(`#patient-board-container .cards-container[data-list-id="${patient.photoStatus}"]`);
-
                     if (container) container.appendChild(card);
-
                 });
-
             }
-
+            
             function createPatientCardElement(patient) {
-
                 const card = document.createElement('div');
-
                 card.className = 'card';
-
                 card.draggable = true;
-
                 card.dataset.patientId = patient.id;
-
                 card.innerHTML = `
-
                     <p class="card-title">${patient.name}</p>
-
                     <div class="card-footer">
-
                         <span class="card-date-display">🗓️ ${patient.date}</span>
-
                         <span class="delete-card" title="Hastayı Sil">✖</span>
-
                     </div>
-
                 `;
-
                 card.addEventListener('dragstart', () => { draggedCard = card; setTimeout(() => card.classList.add('dragging'), 0); });
-
                 card.addEventListener('dragend', () => {
-
                     card.classList.remove('dragging');
-
                     if (!draggedCard || !draggedCard.dataset.patientId) return;
-
                     const patientId = draggedCard.dataset.patientId;
-
                     const newContainer = draggedCard.closest('.cards-container');
-
                     if(newContainer) { updatePatientStatus(patientId, newContainer.dataset.listId); }
-
                     draggedCard = null;
-
                 });
-
                 card.querySelector('.delete-card').addEventListener('click', () => {
-
                     if(confirm("Bu HASTAYI silmek istediğinizden emin misiniz?")) {
-
-                        deletePatient(patient.id); card.remove(); saveData(appData);
-
+                        deletePatient(patient.id); 
+                        card.remove(); 
+                        // GÜNCELLENDİ: saveData(appData); SİLİNDİ
                     }
-
                 });
-
                 return card;
-
             }
-
+            
             function updatePatientStatus(patientId, newStatus) {
-
                 const patient = appData.patients.find(p => p.id === patientId);
-
-                if (patient) { patient.photoStatus = newStatus; saveData(appData); }
-
+                if (patient) { 
+                    patient.photoStatus = newStatus; // Lokal veriyi güncelle
+                    
+                    // GÜNCELLENDİ: Firebase'i güncelle
+                    db.collection('patients').doc(patientId).update({ photoStatus: newStatus })
+                         .catch(error => console.error("Hasta güncellenirken hata: ", error));
+                }
             }
-
-            function deletePatient(patientId) { appData.patients = appData.patients.filter(p => p.id !== patientId); }
-
-
+            
+            function deletePatient(patientId) { 
+                appData.patients = appData.patients.filter(p => p.id !== patientId); // Lokal veriyi sil
+                
+                // GÜNCELLENDİ: Firebase'den sil
+                db.collection('patients').doc(patientId).delete()
+                    .catch(error => console.error("Hasta silinirken hata: ", error));
+            }
 
             // --- 7. GENEL KART SÜRÜKLEME ---
-
+            // (Değişiklik yok)
             document.querySelectorAll('.cards-container').forEach(container => {
-
                 container.addEventListener('dragover', e => {
-
                     e.preventDefault();
-
                     const afterElement = getDragAfterElement(container, e.clientY);
-
                     if (draggedCard) {
-
                         if (afterElement == null) { container.appendChild(draggedCard); } 
-
                         else { container.insertBefore(draggedCard, afterElement); }
-
                     }
-
                 });
-
             });
-
             function getDragAfterElement(container, y) {
-
                 const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
-
                 return draggableElements.reduce((closest, child) => {
-
                     const box = child.getBoundingClientRect();
-
                     const offset = y - box.top - box.height / 2;
-
                     if (offset < 0 && offset > closest.offset) { return { offset: offset, element: child }; } 
-
                     else { return closest; }
-
                 }, { offset: Number.NEGATIVE_INFINITY }).element;
-
             }
-
             
-
-            // --- 8. GÜNCELLENDİ: YAPISKAN NOTLAR MANTIĞI ---
-
+            // --- 8. YAPISKAN NOTLAR MANTIĞI ---
+            
             function renderNotesBoard() {
-
                 notesBoard.innerHTML = '';
-
+                // appData'nın yüklendiğinden emin ol
+                if (!appData || !appData.notes) return; 
                 appData.notes.forEach(note => {
-
                     const noteEl = createNoteElement(note);
-
                     notesBoard.appendChild(noteEl);
-
                 });
-
             }
-
-
 
             function createNoteElement(note) {
-
                 const noteEl = document.createElement('div');
-
                 noteEl.className = 'sticky-note';
-
                 noteEl.dataset.noteId = note.id;
-
                 noteEl.dataset.color = note.color;
-
-                // GÜNCELLENDİ: Sürükleme ve pozisyonla ilgili her şey kaldırıldı
-
-                // noteEl.draggable = true;
-
-                // noteEl.style.position = 'absolute';
-
-                // noteEl.style.left = ...
-
-                // noteEl.style.top = ...
-
-
-
-                noteEl.innerHTML = `
-
-                    <div class="note-header">
-
-                        <span class="note-title"></span>
-
-                        <span class="delete-note" title="Notu Sil">✖</span>
-
-                    </div>
-
-                    <div class="note-content"></div>
-
-                `;
-
                 
-
+                noteEl.innerHTML = `
+                    <div class="note-header">
+                        <span class="note-title"></span>
+                        <span class="delete-note" title="Notu Sil">✖</span>
+                    </div>
+                    <div class="note-content"></div>
+                `;
+                
                 noteEl.querySelector('.note-title').textContent = note.title;
-
                 noteEl.querySelector('.note-content').textContent = note.content;
 
-
-
                 // Silme
-
                 noteEl.querySelector('.delete-note').addEventListener('click', () => {
-
                     if (confirm("Bu notu silmek istediğinizden emin misiniz?")) {
-
                         deleteNote(note.id);
-
                         noteEl.remove();
-
-                        saveData(appData);
-
+                        // GÜNCELLENDİ: saveData(appData); SİLİNDİ
                     }
-
                 });
-
-
-
-                // GÜNCELLENDİ: Sürükleme eventleri kaldırıldı
-
-                // noteEl.addEventListener('dragstart', ...);
-
-                // noteEl.addEventListener('dragend', ...);
-
                 
-
                 return noteEl;
-
             }
-
             
-
-            // GÜNCELLENDİ: Not panosu sürükleme eventleri kaldırıldı
-
-            // notesBoard.addEventListener('dragover', ...);
-
-            // notesBoard.addEventListener('drop', ...);
-
-
-
-            // GÜNCELLENDİ: Pozisyon güncelleme fonksiyonu kaldırıldı
-
-            // function updateNotePosition(noteId, x, y) { ... }
-
-
-
             function deleteNote(noteId) {
-
-                appData.notes = appData.notes.filter(n => n.id !== noteId);
-
+                appData.notes = appData.notes.filter(n => n.id !== noteId); // Lokal veriyi sil
+                
+                // GÜNCELLENDİ: Firebase'den sil
+                db.collection('notes').doc(noteId).delete()
+                    .catch(error => console.error("Not silinirken hata: ", error));
             }
-
             
-
             // Not Ekleme Modalı
-
             addNoteBtn.addEventListener('click', () => {
-
                 noteModal.classList.add('show');
-
                 document.getElementById('note-title-input').focus();
-
             });
-
             cancelNoteBtn.addEventListener('click', () => noteModal.classList.remove('show'));
-
             noteModal.addEventListener('click', (e) => { if (e.target === noteModal) noteModal.classList.remove('show'); });
 
-
-
-            noteForm.addEventListener('submit', (e) => {
-
+            // GÜNCELLENDİ: Not Ekleme Formu
+            noteForm.addEventListener('submit', async (e) => { // async eklendi
                 e.preventDefault();
-
-                const note = {
-
-                    id: 'note-' + Date.now(),
-
+                
+                // GÜNCELLENDİ: id kaldırıldı
+                const noteData = {
                     title: document.getElementById('note-title-input').value,
-
                     content: document.getElementById('note-content-input').value,
-
-                    color: Math.floor(Math.random() * 6) + 1, // 1-6 arası rastgele renk
-
-                    // GÜNCELLENDİ: x, y kaldırıldı
-
-                    // x: Math.floor(Math.random() * 100), 
-
-                    // y: Math.floor(Math.random() * 100)
-
+                    color: Math.floor(Math.random() * 6) + 1,
                 };
-
                 
-
-                appData.notes.push(note);
-
-                saveData(appData);
-
-                
-
-                const noteEl = createNoteElement(note);
-
-                notesBoard.appendChild(noteEl);
-
-                
-
-                noteModal.classList.remove('show');
-
-                noteForm.reset();
-
+                try {
+                    // GÜNCELLENDİ: Firebase'e ekle
+                    const docRef = await db.collection('notes').add(noteData);
+                    const newNote = { id: docRef.id, ...noteData }; // ID'yi al
+                    
+                    appData.notes.push(newNote); // Lokal veriyi güncelle
+                    // GÜNCELLENDİ: saveData(appData); SİLİNDİ
+                    
+                    const noteEl = createNoteElement(newNote);
+                    notesBoard.appendChild(noteEl);
+                    
+                    noteModal.classList.remove('show');
+                    noteForm.reset();
+                } catch (error) {
+                    console.error("Not eklenirken hata: ", error);
+                    alert("Not eklenirken bir hata oluştu.");
+                }
             });
-
-
 
             // --- 9. SAYFA GEÇİŞİ MANTIĞI ---
-
+            // (Değişiklik yok)
             navLinks.forEach(link => {
-
                 link.addEventListener('click', () => {
-
                     if(link.id === 'logout-btn') return;
-
                     
-
                     navLinks.forEach(l => l.classList.remove('active'));
-
                     pages.forEach(p => p.classList.remove('active'));
-
                     link.classList.add('active');
-
                     const activePage = document.getElementById(link.dataset.page);
-
                     activePage.classList.add('active');
-
                     currentActivePage = link.dataset.page;
-
                     sidebar.classList.remove('open');
-
                     
-
                     if (currentActivePage === 'board-page' || currentActivePage === 'patient-page') {
-
                         document.querySelector('.main-content-wrapper').style.backgroundColor = 'var(--board-bg)';
-
                     } else {
-
                         document.querySelector('.main-content-wrapper').style.backgroundColor = 'var(--list-bg)';
-
                     }
-
                     
-
                     if (currentActivePage === 'reports-page') renderReportPage();
-
                     if (currentActivePage === 'patient-page') renderPatientBoard(patientWeekPicker.value);
-
                     if (currentActivePage === 'notes-page') renderNotesBoard(); 
-
                 });
-
             });
-
             
-
             // --- 10. GÖREV PANOSU EVENTLERİ ---
-
             boardDatePicker.addEventListener('change', (e) => renderTaskBoard(e.target.value));
-
             document.querySelectorAll('#board-container .add-card-btn').forEach(button => {
-
                 button.addEventListener('click', () => {
-
                     const listId = button.dataset.list;
-
                     listIdInput.value = listId; 
-
                     document.getElementById('task-date').value = boardDatePicker.value;
-
                     taskModal.classList.add('show');
-
                     document.getElementById('task-title').focus();
-
                 });
-
             });
-
             cancelTaskBtn.addEventListener('click', () => taskModal.classList.remove('show'));
-
             taskModal.addEventListener('click', (e) => { if(e.target === taskModal) taskModal.classList.remove('show'); });
-
-            taskForm.addEventListener('submit', e => {
-
+            
+            // GÜNCELLENDİ: Görev Ekleme Formu
+            taskForm.addEventListener('submit', async (e) => { // async eklendi
                 e.preventDefault();
-
                 const taskDate = document.getElementById('task-date').value;
-
                 const listId = listIdInput.value;
+                
+                // GÜNCELLENDİ: id kaldırıldı
+                const taskData = { 
+                    title: document.getElementById('task-title').value, 
+                    platform: document.getElementById('task-platform').value, 
+                    date: taskDate, 
+                    status: listId 
+                };
 
-                const task = { id: 'task-' + Date.now(), title: document.getElementById('task-title').value, platform: document.getElementById('task-platform').value, date: taskDate, status: listId };
-
-                appData.tasks.push(task);
-
-                saveData(appData);
-
-                if (taskDate === boardDatePicker.value) renderTaskBoard(taskDate);
-
-                taskModal.classList.remove('show');
-
-                taskForm.reset();
-
-                updateReportPageIfActive();
-
+                try {
+                    // GÜNCELLENDİ: Firebase'e ekle
+                    const docRef = await db.collection('tasks').add(taskData);
+                    const newTask = { id: docRef.id, ...taskData }; // ID'yi al
+                    
+                    appData.tasks.push(newTask); // Lokal veriyi güncelle
+                    // GÜNCELLENDİ: saveData(appData); SİLİNDİ
+                    
+                    if (taskDate === boardDatePicker.value) {
+                        // Panonun tamamını yenilemek yerine sadece yeni kartı ekle
+                        const card = createTaskCardElement(newTask);
+                        document.querySelector(`#board-container .cards-container[data-list-id="${newTask.status}"]`).appendChild(card);
+                    }
+                    
+                    taskModal.classList.remove('show');
+                    taskForm.reset();
+                    updateReportPageIfActive();
+                } catch (error) {
+                    console.error("Görev eklenirken hata: ", error);
+                    alert("Görev eklenirken bir hata oluştu.");
+                }
             });
-
-
 
             // --- 11. HASTA PANOSU EVENTLERİ ---
-
             patientWeekPicker.addEventListener('change', (e) => renderPatientBoard(e.target.value));
-
             addPatientBtn.addEventListener('click', () => {
-
                 document.getElementById('patient-date').value = getTodayISO();
-
                 patientModal.classList.add('show');
-
                 document.getElementById('patient-name').focus();
-
             });
-
             cancelPatientBtn.addEventListener('click', () => patientModal.classList.remove('show'));
-
             patientModal.addEventListener('click', (e) => { if(e.target === patientModal) patientModal.classList.remove('show'); });
-
-            patientForm.addEventListener('submit', e => {
-
+            
+            // GÜNCELLENDİ: Hasta Ekleme Formu
+            patientForm.addEventListener('submit', async (e) => { // async eklendi
                 e.preventDefault();
-
-                const patient = { id: 'patient-' + Date.now(), name: document.getElementById('patient-name').value, date: document.getElementById('patient-date').value, photoStatus: 'bekleniyor' };
-
-                appData.patients.push(patient);
-
-                saveData(appData);
-
-                renderPatientBoard(patientWeekPicker.value);
-
-                patientModal.classList.remove('show');
-
-                patientForm.reset();
-
+                
+                // GÜNCELLENDİ: id kaldırıldı
+                const patientData = { 
+                    name: document.getElementById('patient-name').value, 
+                    date: document.getElementById('patient-date').value, 
+                    photoStatus: 'bekleniyor' 
+                };
+                
+                try {
+                    // GÜNCELLENDİ: Firebase'e ekle
+                    const docRef = await db.collection('patients').add(patientData);
+                    const newPatient = { id: docRef.id, ...patientData }; // ID'yi al
+                    
+                    appData.patients.push(newPatient); // Lokal veriyi güncelle
+                    // GÜNCELLENDİ: saveData(appData); SİLİNDİ
+                    
+                    renderPatientBoard(patientWeekPicker.value); // Panoyu yenile
+                    patientModal.classList.remove('show');
+                    patientForm.reset();
+                } catch (error) {
+                    console.error("Hasta eklenirken hata: ", error);
+                    alert("Hasta eklenirken bir hata oluştu.");
+                }
             });
-
-
 
             // --- 12. RAPORLAMA MANTIĞI ---
-
+            // (Değişiklik yok, appData'yı okuduğu için çalışmaya devam edecek)
             generateReportBtn.addEventListener('click', renderReportPage);
-
             function renderReportPage() {
-
                 const startDate = reportStartDateInput.value;
-
                 const endDate = reportEndDateInput.value;
-
                 if (!startDate || !endDate) {
-
                     reportStartDateInput.value = getOneMonthAgoISO();
-
                     reportEndDateInput.value = getTodayISO();
-
                     alert("Tarih aralığı boştu, son 1 ay varsayılan olarak ayarlandı. Tekrar 'Raporu Oluştur'a basın.");
-
                     return;
-
                 }
-
                 const aggregatedData = aggregateTaskData(startDate, endDate);
-
                 createOrUpdateCharts(aggregatedData.status, aggregatedData.platform);
-
             }
-
             function aggregateTaskData(startDate, endDate) {
-
                 let statusCounts = { beklemede: 0, yapiliyor: 0, tamamlandi: 0 };
-
                 let platformCounts = {};
-
+                if (!appData || !appData.tasks) return { status: statusCounts, platform: platformCounts }; // Güvenlik kontrolü
+                
                 const filteredTasks = appData.tasks.filter(task => task.date >= startDate && task.date <= endDate);
-
                 filteredTasks.forEach(task => {
-
                     if (statusCounts.hasOwnProperty(task.status)) statusCounts[task.status]++;
-
                     platformCounts[task.platform] = (platformCounts[task.platform] || 0) + 1;
-
                 });
-
                 return { status: statusCounts, platform: platformCounts };
-
             }
-
             function createOrUpdateCharts(statusData, platformData) {
-
                 const ctxStatus = document.getElementById('statusChart').getContext('2d');
-
                 if (myStatusChartInstance) myStatusChartInstance.destroy();
-
                 myStatusChartInstance = new Chart(ctxStatus, {
-
                     type: 'doughnut',
-
                     data: {
-
                         labels: ['Beklemede', 'Yapılıyor', 'Tamamlandı'],
-
                         datasets: [{ data: [statusData.beklemede, statusData.yapiliyor, statusData.tamamlandi], backgroundColor: ['#FFC107', '#2196F3', '#4CAF50'], borderColor: '#ffffff', borderWidth: 3 }]
-
                     },
-
                     options: { responsive: true, plugins: { legend: { position: 'top' } } }
-
                 });
-
                 const ctxPlatform = document.getElementById('platformChart').getContext('2d');
-
                 if (myPlatformChartInstance) myPlatformChartInstance.destroy();
-
                 const platformLabels = Object.keys(platformData);
-
                 const platformValues = Object.values(platformData);
-
                 const platformColors = platformLabels.map(p => {
-
                     if (p === 'instagram') return '#E1306C';
-
                     if (p === 'tiktok') return '#000000';
-
                     if (p === 'linkedin') return '#0A66C2';
-
                     if (p === 'youtube') return '#FF0000';
-
                     return '#777';
-
                 });
-
                 myPlatformChartInstance = new Chart(ctxPlatform, {
-
                     type: 'bar',
-
                     data: {
-
                         labels: platformLabels,
-
                         datasets: [{ label: 'Platform Başına Görev Sayısı', data: platformValues, backgroundColor: platformColors, }]
-
                     },
-
                     options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
-
                 });
-
             }
-
             function updateReportPageIfActive() {
-
                 if (currentActivePage === 'reports-page') renderReportPage();
-
             }
-
             
-
-            // --- 13. UYGULAMAYI BAŞLAT ---
-
-            const today = getTodayISO();
-
-            boardDatePicker.value = today;
-
-            patientWeekPicker.value = getWeekString(new Date());
-
-            reportStartDateInput.value = getOneMonthAgoISO();
-
-            reportEndDateInput.value = today;
-
+            // --- 13. UYGULAMAYI BAŞLAT (GÜNCELLENDİ) ---
             
+            async function initializeApp() {
+                // 1. Veri yüklenirken bir yükleme göstergesi ekleyebiliriz (opsiyonel)
+                //    Örn: loginError.textContent = "Veriler yükleniyor..."; loginError.style.display = 'block';
 
-            // Panoları ilk defa doldur
-
-            renderTaskBoard(today);
-
-            renderPatientBoard(patientWeekPicker.value);
-
-            renderNotesBoard(); // Notları çiz
-
+                // 2. Önce verileri Firebase'den yükle
+                appData = await loadDataFromFirebase();
+                
+                //    Örn: loginError.style.display = 'none'; // Yükleme göstergesini gizle
+                
+                // 3. Veriler yüklendikten sonra tarih seçicileri ayarla
+                const today = getTodayISO();
+                boardDatePicker.value = today;
+                patientWeekPicker.value = getWeekString(new Date());
+                reportStartDateInput.value = getOneMonthAgoISO();
+                reportEndDateInput.value = today;
+                
+                // 4. Panoları ilk defa doldur
+                renderTaskBoard(today);
+                renderPatientBoard(patientWeekPicker.value);
+                renderNotesBoard();
+            }
             
-
+            // GÜNCELLENDİ: Uygulamayı sadece giriş yapılmışsa başlat
+            if (sessionStorage.getItem('loggedIn') === 'true') {
+                initializeApp();
+            }
+            
         });
-
     </script>
 
-
-
 </body>
-
 </html>
